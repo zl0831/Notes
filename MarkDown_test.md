@@ -1,6 +1,6 @@
 # 测试MarkDown
 
-## 测试
+## 测试1
 
 ### 区块引用
 
@@ -12,7 +12,9 @@
 
 ### 代码框
 
-```
+`public String str = "";`
+
+```java
 //代码测试
 private void OnQuerySelect(View view) {
    initDialog(getContext(), R.layout.setting_info_dialog, recyclerViewData);
