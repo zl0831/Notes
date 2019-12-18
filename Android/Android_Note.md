@@ -149,3 +149,128 @@ mViewPager.setAdapter(new FragmentPagerAdapter(getChildFragmentManager()) {
     }
 });
 ```
+
+## Bundle
+
+### 参数传递
+
+* **传递Map和List**,其他基本类型的传递，bundle都给封装好了，直接用就成
+
+利用SerializableMap来传递map和list，需要将数据对象序列化
+
+```java
+//自定义序列化数据对象
+public class SerializableData<T> implements Serializable {
+
+    private List<T> list;
+    private Map<String,T> map;
+
+    public List<T> getList() {
+        return list;
+    }
+    public void setList(List<T> list) {
+        this.list = list;
+    }
+    public Map<String,T> getMap()
+    {
+        return map;
+    }
+    public void setMap(Map<String,T> map)
+    {
+        this.map=map;
+    }
+
+}
+```
+
+```java
+// 传递map
+Bundle bundle = new Bundle();
+SerializableData map = new SerializableData<Object>();
+Map mapData = new HashMap<String,Object>();
+map.setMap(mapData);
+bundle.putSerializable("map", map);
+
+// 传递list
+SerializableData list = new SerializableData<Map>();
+List listData = new ArrayList<HashMap<String,Object>>();
+list.setList(listData);
+bundle.putSerializable("list", list);
+```
+
+解析bundle获取map和list
+
+```java
+SerializableData data = (SerializableData) bundle.getSerializable("map");
+Map map = data.getMap();
+SerializableData list = (SerializableData) bundle.getSerializable("list");
+List list = list.getList();
+```
+
+传递List还有另外一种方法，将数据对象定义为Parcelable类型,相对麻烦些
+
+```java
+public class Group implements Parcelable{
+    private int id;
+    private String name;
+
+    public String getId() {
+        return id;
+    }
+    public void setId(String id) {
+        this.id = id;
+    }
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public void writeToParcel(Parcel arg0, int arg1) {
+        // TODO Auto-generated method stub
+        // 1.必须按成员变量声明的顺序封装数据，不然会出现获取数据出错
+        // 2.序列化对象
+        arg0.writeString(id);
+        arg0.writeString(name);
+    }
+
+    // 1.必须实现Parcelable.Creator接口,否则在获取Person数据的时候，会报错，如下：
+    // android.os.BadParcelableException:
+    // Parcelable protocol requires a Parcelable.Creator object called  CREATOR on class com.um.demo.Person
+    // 2.这个接口实现了从Percel容器读取Person数据，并返回Person对象给逻辑层使用
+    // 3.实现Parcelable.Creator接口对象名必须为CREATOR，不如同样会报错上面所提到的错；
+    // 4.在读取Parcel容器里的数据事，必须按成员变量声明的顺序读取数据，不然会出现获取数据出错
+    // 5.反序列化对象
+    public static final Parcelable.Creator<Gate> CREATOR = new Creator(){
+        @Override
+        public Gate createFromParcel(Parcel source) {
+            // TODO Auto-generated method stub
+            // 必须按成员变量声明的顺序读取数据，不然会出现获取数据出错
+            Gate p = new Gate();
+            p.setId(source.readString());
+            p.setName(source.readString());
+            return p;
+        }
+
+        @Override
+        public Gate[] newArray(int size) {
+            // TODO Auto-generated method stub
+            return new Gate[size];
+        }
+    };
+}
+```
+
+用bundle传递Parcelable对象
+
+```java
+// 传递数据
+Bundle bundle = new Bundle();
+List groups = new ArrayList<Group>();
+bundle.putParcelableArrayList("groups", groups);
+
+//获取Parcelable对象
+groups = bundle.getParcelableArrayList("groups");
+```
