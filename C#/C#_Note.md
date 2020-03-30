@@ -14,3 +14,4 @@
 
 protected(受保护的)：限定的是只有继承的子类中可以访问，可以跨程序集。
 **protected internal**: 受保护“或”内部修饰符修饰成员，当父类与子类在同一程序集时，internal成员可见。当父类与子类不在同一程序集中，子类不能访问父类的internal成员，但是可以访问父类的ptotected internal成员。
+
